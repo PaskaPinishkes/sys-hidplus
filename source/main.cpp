@@ -7,14 +7,13 @@
 #include <switch.h>
 
 // Other stuff
+#include <malloc.h>
 
 extern "C" {
-    extern u32 __start__;
-
     // Sysmodules should not use applet*.
     u32 __nx_applet_type = AppletType_None;
     // Sysmodules will normally only want to use one FS session.
-    u32 __nx_fs_num_sessions = 1;
+    //u32 __nx_fs_num_sessions = 1;
 
 
     // Adjust size as needed.
@@ -26,63 +25,74 @@ extern "C" {
     void __libnx_initheap(void);
     void __appInit(void);
     void __appExit(void);
-}
 
-void __libnx_initheap(void)
-{
-	void*  addr = nx_inner_heap;
-	size_t size = nx_inner_heap_size;
 
-	// Newlib
-	extern char* fake_heap_start;
-	extern char* fake_heap_end;
+    void __libnx_initheap(void)
+    {
+        void*  addr = nx_inner_heap;
+        size_t size = nx_inner_heap_size;
 
-	fake_heap_start = (char*)addr;
-	fake_heap_end   = (char*)addr + size;
-}
+        // Newlib
+        extern char* fake_heap_start;
+        extern char* fake_heap_end;
 
-// Init/exit services, update as needed.
-void __attribute__((weak)) __appInit(void)
-{
-    Result rc;
+        fake_heap_start = (char*)addr;
+        fake_heap_end   = (char*)addr + size;
+    }
 
-    // Initialize default services.
-    rc = smInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
+    // Init/exit services, update as needed.
+    void __attribute__((weak)) __appInit(void)
+    {
+        Result rc;
+        // Initialize default services.
+        rc = smInitialize();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
 
-    // Enable this if you want to use HID.
-    rc = hidInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
+        if (hosversionGet() == 0) {
+            rc = setsysInitialize();
+            if (R_SUCCEEDED(rc)) {
+                SetSysFirmwareVersion fw;
+                rc = setsysGetFirmwareVersion(&fw);
+                if (R_SUCCEEDED(rc))
+                    hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
+                setsysExit();
+            }
+        }
 
-    //Enable this if you want to use time.
-    /*rc = timeInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_Time));
+        // Enable this if you want to use HID.
+        rc = hidInitialize();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
 
-    __libnx_init_time();*/
+        //Enable this if you want to use time.
+        rc = timeInitialize();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_Time));
 
-    rc = fsInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
+        __libnx_init_time();
 
-    rc = fsdevMountSdmc();
-    if (R_FAILED(rc))
-        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
-    
-}
+        rc = fsInitialize();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
 
-void __attribute__((weak)) userAppExit(void);
+        rc = fsdevMountSdmc();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
+        
+    }
 
-void __attribute__((weak)) __appExit(void)
-{
-    // Cleanup default services.
-    fsdevUnmountAll();
-    fsExit();
-    //timeExit();//Enable this if you want to use time.
-    //hidExit();// Enable this if you want to use HID.
-    smExit();
+    void __attribute__((weak)) userAppExit(void);
+
+    void __attribute__((weak)) __appExit(void)
+    {
+        // Cleanup default services.
+        fsdevUnmountAll();
+        fsExit();
+        timeExit();//Enable this if you want to use time.
+        hidExit();// Enable this if you want to use HID.
+        smExit();
+    }
 }
 
 int printToFile(const char* myString)
@@ -96,6 +106,7 @@ int printToFile(const char* myString)
 }
 
 // Main program entrypoint
+u64 mainLoopSleepTime = 50;
 int main(int argc, char* argv[])
 {
     // Initialization code can go here.
@@ -110,10 +121,13 @@ int main(int argc, char* argv[])
 
         hidScanInput();
 
+        u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+
+        if (kDown & KEY_PLUS)
+            printToFile("This works, good job");
         
-        if (hidKeysDown(CONTROLLER_P1_AUTO) & KEY_PLUS) {
-            printToFile("This sysmodule works");
-        }
+
+        svcSleepThread(mainLoopSleepTime * 1e+6L);
 
     }
 
