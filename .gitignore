@@ -1,3 +1,8 @@
 *.log
 *.log*
 /build/*
+/release/*
+*.elf
+*.nacp
+*.nsp
+*.nro
