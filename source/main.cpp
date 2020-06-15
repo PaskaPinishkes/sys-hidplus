@@ -92,7 +92,7 @@ int printToFile(const char* myString)
             fprintf(log, myString);
             fclose(log);
     }
-    return;
+    return 0;
 }
 
 // Main program entrypoint
