@@ -52,9 +52,9 @@ void __attribute__((weak)) __appInit(void)
         fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_SM));
 
     // Enable this if you want to use HID.
-    /*rc = hidInitialize();
+    rc = hidInitialize();
     if (R_FAILED(rc))
-        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));*/
+        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
 
     //Enable this if you want to use time.
     /*rc = timeInitialize();
@@ -85,6 +85,15 @@ void __attribute__((weak)) __appExit(void)
     smExit();
 }
 
+int printToFile(const char* myString)
+{
+    FILE *log = fopen("/hidplus/log.txt", "w+a");
+    if (log != nullptr) {
+            fprintf(log, myString);
+            fclose(log);
+    }
+}
+
 // Main program entrypoint
 int main(int argc, char* argv[])
 {
@@ -93,15 +102,18 @@ int main(int argc, char* argv[])
     // Your code / main loop goes here.
     // If you need threads, you can use threadCreate etc.
 
-    FILE *log = fopen("/hidplus/log.txt", "w+a");
-    if (log != nullptr) {
-            fprintf(log, "sysmodule working correctly\n");
-            fclose(log);
-    }
+    printToFile("READY!");
     
     while (appletMainLoop()) // Main loop
     {
-        printf("Hello World!");
+
+        hidScanInput();
+
+        
+        if (hidKeysDown(CONTROLLER_P1_AUTO) & KEY_PLUS) {
+            printToFile("This sysmodule works");
+        }
+
     }
 
     // Deinitialization and resources clean up code can go here.
