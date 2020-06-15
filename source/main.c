@@ -6,6 +6,9 @@
 // Include the main libnx system header, for Switch development
 #include <switch.h>
 
+// Other stuff
+
+
 // Sysmodules should not use applet*.
 u32 __nx_applet_type = AppletType_None;
 // Sysmodules will normally only want to use one FS session.
@@ -55,7 +58,10 @@ void __attribute__((weak)) __appInit(void)
     if (R_FAILED(rc))
         fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
 
-    fsdevMountSdmc();
+    rc = fsdevMountSdmc();
+    if (R_FAILED(rc))
+        fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
+    
 }
 
 void __attribute__((weak)) userAppExit(void);
@@ -77,6 +83,18 @@ int main(int argc, char* argv[])
 
     // Your code / main loop goes here.
     // If you need threads, you can use threadCreate etc.
+
+    FILE *log = fopen("/hidplus/log.txt", "w+a");
+    bool logUsed = false;
+    
+    while (appletMainLoop()) // Main loop
+    {
+        if (log != NULL && !logUsed) {
+            fprintf(log, "sysmodule working correctly\n");
+            fclose(log);
+            logUsed = true;
+        }
+    }
 
     // Deinitialization and resources clean up code can go here.
     return 0;
