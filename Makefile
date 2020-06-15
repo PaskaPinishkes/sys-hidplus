@@ -183,25 +183,11 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-ifeq ($(strip $(APP_JSON)),)
-
-all	:	$(OUTPUT).nro
-
-ifeq ($(strip $(NO_NACP)),)
-$(OUTPUT).nro	:	$(OUTPUT).elf $(OUTPUT).nacp
-else
-$(OUTPUT).nro	:	$(OUTPUT).elf
-endif
-
-else
-
 all	:	$(OUTPUT).nsp
 
 $(OUTPUT).nsp	:	$(OUTPUT).nso $(OUTPUT).npdm
 
 $(OUTPUT).nso	:	$(OUTPUT).elf
-
-endif
 
 $(OUTPUT).elf	:	$(OFILES)
 
