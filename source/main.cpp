@@ -8,16 +8,25 @@
 
 // Other stuff
 
+extern "C" {
+    extern u32 __start__;
 
-// Sysmodules should not use applet*.
-u32 __nx_applet_type = AppletType_None;
-// Sysmodules will normally only want to use one FS session.
-u32 __nx_fs_num_sessions = 1;
+    // Sysmodules should not use applet*.
+    u32 __nx_applet_type = AppletType_None;
+    // Sysmodules will normally only want to use one FS session.
+    u32 __nx_fs_num_sessions = 1;
 
-// Adjust size as needed.
-#define INNER_HEAP_SIZE 0x80000
-size_t nx_inner_heap_size = INNER_HEAP_SIZE;
-char   nx_inner_heap[INNER_HEAP_SIZE];
+
+    // Adjust size as needed.
+    #define INNER_HEAP_SIZE 0x80000
+    size_t nx_inner_heap_size = INNER_HEAP_SIZE;
+    char   nx_inner_heap[INNER_HEAP_SIZE];
+
+    void __libnx_init_time(void);
+    void __libnx_initheap(void);
+    void __appInit(void);
+    void __appExit(void);
+}
 
 void __libnx_initheap(void)
 {
@@ -85,15 +94,14 @@ int main(int argc, char* argv[])
     // If you need threads, you can use threadCreate etc.
 
     FILE *log = fopen("/hidplus/log.txt", "w+a");
-    bool logUsed = false;
+    if (log != nullptr) {
+            fprintf(log, "sysmodule working correctly\n");
+            fclose(log);
+    }
     
     while (appletMainLoop()) // Main loop
     {
-        if (log != NULL && !logUsed) {
-            fprintf(log, "sysmodule working correctly\n");
-            fclose(log);
-            logUsed = true;
-        }
+        printf("Hello World!");
     }
 
     // Deinitialization and resources clean up code can go here.
