@@ -8,6 +8,7 @@
 
 // Other stuff
 #include <malloc.h>
+#include "con_manager.hpp"
 
 extern "C" {
     // Sysmodules should not use applet*.
@@ -115,7 +116,8 @@ int main(int argc, char* argv[])
     // If you need threads, you can use threadCreate etc.
 
     printToFile("READY!");
-    
+    FakeController testController;
+
     while (appletMainLoop()) // Main loop
     {
 
@@ -124,8 +126,18 @@ int main(int argc, char* argv[])
         u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
         if (kDown & KEY_PLUS)
-            printToFile("This works, good job");
-        
+        {
+            // Start the controller
+            testController.initialize();
+            // Press A
+            svcSleepThread(1000 * 1e+6L);
+            testController.controllerState.buttons = 1;
+            hiddbgSetHdlsState(testController.controllerHandle, &testController.controllerState);
+            // Unpress A
+            svcSleepThread(1000 * 1e+6L);
+            testController.controllerState.buttons = 0;
+            hiddbgSetHdlsState(testController.controllerHandle, &testController.controllerState);
+        }
 
         svcSleepThread(mainLoopSleepTime * 1e+6L);
 
