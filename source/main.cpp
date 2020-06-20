@@ -84,6 +84,11 @@ extern "C" {
         rc = fsdevMountSdmc();
         if (R_FAILED(rc))
             fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_FS));
+
+        rc = hiddbgAttachHdlsWorkBuffer();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
+
         
     }
 
