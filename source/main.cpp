@@ -66,6 +66,10 @@ extern "C" {
         if (R_FAILED(rc))
             fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
 
+        rc = hiddbgInitialize();
+        if (R_FAILED(rc))
+            fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
+
         //Enable this if you want to use time.
         rc = timeInitialize();
         if (R_FAILED(rc))

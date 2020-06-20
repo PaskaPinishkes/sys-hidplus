@@ -6,7 +6,7 @@ int FakeController::initialize()
     Result myResult;
     printToFile("Controller initializing...");
         
-    
+    hiddbgInitialize();
     // Set the controller type to Pro-Controller, and set the npadInterfaceType.
     controllerDevice.deviceType = HidDeviceType_FullKey3; // FullKey3 for Pro Controller, JoyLeft4 for left joy con
     controllerDevice.npadInterfaceType = NpadInterfaceType_Bluetooth;
