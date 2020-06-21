@@ -6,7 +6,7 @@ int FakeController::initialize()
 {
     if (isInitialized == true) return 0;
     Result myResult;
-    printToFile("Controller initializing...");
+    //printToFile("Controller initializing...");
 
     // Set the controller type to Pro-Controller, and set the npadInterfaceType.
     controllerDevice.deviceType = HidDeviceType_FullKey3; // FullKey3 for Pro Controller, JoyLeft4 for left joy con
@@ -26,21 +26,42 @@ int FakeController::initialize()
     
     myResult = hiddbgAttachHdlsVirtualDevice(&controllerHandle, &controllerDevice);
     if (R_FAILED(myResult)) {
-        printToFile("Failed connecting controller... fuck");
+        //printToFile("Failed connecting controller... fuck");
         return -1;
     }
 
-    printToFile("Controller initialized!");
+    //printToFile("Controller initialized!");
     isInitialized = true;
     return 0;
 }
 
+FakeController testController2;
+void apply_fake_con_state(struct input_message message)
+{
+    if(message.magic != INPUT_MSG_MAGIC)
+        return;
+    
+    if (testController2.isInitialized == false)
+    {
+        testController2.initialize();
+    }
+
+    testController2.controllerState.buttons = message.keys;
+    testController2.controllerState.joysticks[0].dx = message.joy_l_x;
+    testController2.controllerState.joysticks[0].dy = message.joy_l_y;
+    testController2.controllerState.joysticks[1].dx = message.joy_r_x;
+    testController2.controllerState.joysticks[1].dy = message.joy_r_y;
+    hiddbgSetHdlsState(testController2.controllerHandle, &testController2.controllerState);
+    
+    return;
+}
+
 static Mutex pkgMutex;
-static input_message fakeConsState;
+static struct input_message fakeConsState;
 
 void networkThread(void* _)
 {
-    input_message temporal_pkg;
+    struct input_message temporal_pkg;
     while (true)
     {
         int poll_res = poll_udp_input(&temporal_pkg);
@@ -49,6 +70,7 @@ void networkThread(void* _)
         if (poll_res == 0)
         {
             fakeConsState = temporal_pkg;
+            apply_fake_con_state(fakeConsState);
         }
         else
         {

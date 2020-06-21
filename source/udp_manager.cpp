@@ -27,6 +27,7 @@ void setup_socket()
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {
         perror("failed to create the socket");
+        printToFile("COULDN'T CREATE SOCKET!");
         exit(EXIT_FAILURE);
     }
 
@@ -42,16 +43,18 @@ void setup_socket()
     servaddr.sin_addr.s_addr = INADDR_ANY;
     servaddr.sin_port = htons(PORT);
 
+    printToFile("SOCKET CREATION SUCCESS!");
+
     bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr));
 }
 
 static u32 curIP = 0;
 static int failed = 11;
 static int counter = 0;
-static input_message cached_message = {0};
+static struct input_message cached_message = {0};
 u64 last_time;
 
-int poll_udp_input(input_message *buf)
+int poll_udp_input(struct input_message *buf)
 {
     // Just as mentioned before, most (if not all) of the code in the previous and current function comes from hid_mitm, so if you want to check how everything
     // works, I recommend you to check it out, it's pretty cool and well documented!
@@ -88,13 +91,17 @@ int poll_udp_input(input_message *buf)
 
     socklen_t len;
     int n;
-    input_message temp_message;
-    n = recvfrom(sockfd, &temp_message, sizeof(input_message),
+    struct input_message temp_message;
+    n = recvfrom(sockfd, &temp_message, sizeof(struct input_message),
                  MSG_WAITALL, (struct sockaddr *)&cliaddr,
                  &len);
     if (n <= 0 || temp_message.magic != INPUT_MSG_MAGIC)
     {
         failed++;
+        if (n > 0)
+        {
+            printToFile("BRUH THAT MAGIC IS NOT REAL GET THE F OUT OF HERE");
+        }
     }
     else
     {

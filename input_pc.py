@@ -101,7 +101,7 @@ if len(sys.argv) != 2:
     os._exit(1)
 
 print("welcome!")  
-server_address = (sys.argv[1], 8080)
+server_address = (sys.argv[1], 8000)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # -------- Main Program Loop -----------
@@ -535,7 +535,7 @@ while(True):
     #
     
     #INPUTS!                                    MAGIC-  KEYS FROM GAMEPAD 1  AMOUNT OF CONS-  STICKS FROM GAMEPAD 1---------------------------------------------------------------  KEYS FROM GAMEPAD 2  STICKS FROM GAMEPAD 2---------------------------------------------------------------  KEYS FROM GAMEPAD 3  STICKS FROM GAMEPAD 3---------------------------------------------------------------  KEYS FROM GAMEPAD 4  STICKS FROM GAMEPAD 4---------------------------------------------------------------
-    #sock.sendto(pack("<HQHiiiiQiiiiQiiiiQiiii", 0x3276, gamepadList[0].keys, controllerCount, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r, gamepadList[1].keys, gamepadList[1].dx_l, -gamepadList[1].dy_l, gamepadList[1].dx_r, -gamepadList[1].dy_r, gamepadList[2].keys, gamepadList[2].dx_l, -gamepadList[2].dy_l, gamepadList[2].dx_r, -gamepadList[2].dy_r, gamepadList[3].keys, gamepadList[3].dx_l, -gamepadList[3].dy_l, gamepadList[3].dx_r, -gamepadList[3].dy_r), server_address)
-    sock.sendto(pack("<HQiiii", 0x3276, gamepadList[0].keys, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r), server_address)
+    #sock.sendto(pack("<HQHiiiiQiiiiQiiiiQiiii", 0x3275, gamepadList[0].keys, controllerCount, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r, gamepadList[1].keys, gamepadList[1].dx_l, -gamepadList[1].dy_l, gamepadList[1].dx_r, -gamepadList[1].dy_r, gamepadList[2].keys, gamepadList[2].dx_l, -gamepadList[2].dy_l, gamepadList[2].dx_r, -gamepadList[2].dy_r, gamepadList[3].keys, gamepadList[3].dx_l, -gamepadList[3].dy_l, gamepadList[3].dx_r, -gamepadList[3].dy_r), server_address)
+    sock.sendto(pack("<HQiiii", 0x3275, gamepadList[0].keys, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r), server_address)
     print("P1: ", gamepadList[0].keys, " P2: ", gamepadList[1].keys, " P3: ", gamepadList[2].keys, " P4: ", gamepadList[3].keys)
     sleep(1/60)

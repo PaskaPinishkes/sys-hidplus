@@ -9,6 +9,30 @@
 // Other stuff
 #include <malloc.h>
 #include "con_manager.hpp"
+#include "udp_manager.hpp"
+#include <cstdlib>
+#include <cstdint>
+#include <cstring>
+#include <optional>
+#include <mutex>
+
+static const SocketInitConfig sockInitConf = {
+    .bsdsockets_version = 1,
+
+    .tcp_tx_buf_size        = 0x200,
+    .tcp_rx_buf_size        = 0x400,
+    .tcp_tx_buf_max_size    = 0x400,
+    .tcp_rx_buf_max_size    = 0x800,
+    // We're not using tcp anyways
+
+    .udp_tx_buf_size = 0x2600,
+    .udp_rx_buf_size = 0xA700,
+
+    .sb_efficiency = 2,
+
+    .num_bsd_sessions = 3,
+    .bsd_service_type = BsdServiceType_User
+};
 
 extern "C" {
     // Sysmodules should not use applet*.
@@ -89,9 +113,25 @@ extern "C" {
         if (R_FAILED(rc))
             fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
 
-        //rc = socketInitialize(&sockInitConf);
-        //if (R_FAILED(rc))
-        //    fatalThrow(rc);
+        rc = pmdmntInitialize();
+        if (R_FAILED(rc)) 
+            fatalThrow(rc);
+
+        rc = ldrDmntInitialize();
+        if (R_FAILED(rc)) 
+            fatalThrow(rc);
+
+        rc = pminfoInitialize();
+        if (R_FAILED(rc)) 
+            fatalThrow(rc);
+
+        rc = socketInitialize(&sockInitConf);
+        if (R_FAILED(rc))
+            fatalThrow(rc);
+
+        rc = capsscInitialize();
+        if (R_FAILED(rc))
+            fatalThrow(rc);
         
     }
 
@@ -105,6 +145,7 @@ extern "C" {
         timeExit();//Enable this if you want to use time.
         hidExit();// Enable this if you want to use HID.
         smExit();
+        socketExit();
     }
 }
 
@@ -120,6 +161,7 @@ int printToFile(const char* myString)
 
 // Main program entrypoint
 u64 mainLoopSleepTime = 50;
+static Thread network_thread;
 int main(int argc, char* argv[])
 {
     // Initialization code can go here.
@@ -129,7 +171,10 @@ int main(int argc, char* argv[])
 
     printToFile("READY!");
     FakeController testController;
-
+    
+    threadCreate(&network_thread, networkThread, NULL, NULL, 0x1000, 0x30, 3);
+    threadStart(&network_thread);
+    
     while (appletMainLoop()) // Main loop
     {
 
@@ -137,7 +182,7 @@ int main(int argc, char* argv[])
 
         u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
-        if (kDown & KEY_PLUS)
+        /*if (kDown & KEY_PLUS)
         {
             // Start the controller
             testController.initialize();
@@ -148,7 +193,7 @@ int main(int argc, char* argv[])
             svcSleepThread(1000 * 1e+6L);
             testController.controllerState.buttons = 0;
             hiddbgSetHdlsState(testController.controllerHandle, &testController.controllerState);
-        }
+        }*/
 
         svcSleepThread(mainLoopSleepTime * 1e+6L);
 
