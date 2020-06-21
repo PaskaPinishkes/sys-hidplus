@@ -139,7 +139,6 @@ int main(int argc, char* argv[])
             // Start the controller
             testController.initialize();
             // Press A
-            svcSleepThread(1000 * 1e+6L);
             testController.controllerState.buttons = 1;
             hiddbgSetHdlsState(testController.controllerHandle, &testController.controllerState);
             // Unpress A
