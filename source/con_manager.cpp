@@ -1,4 +1,6 @@
 #include "con_manager.hpp"
+#include "udp_manager.hpp"
+#include <mutex>
 
 int FakeController::initialize()
 {
@@ -31,4 +33,30 @@ int FakeController::initialize()
     printToFile("Controller initialized!");
     isInitialized = true;
     return 0;
+}
+
+static Mutex pkgMutex;
+static input_message fakeConsState;
+
+void networkThread(void* _)
+{
+    input_message temporal_pkg;
+    while (true)
+    {
+        int poll_res = poll_udp_input(&temporal_pkg);
+        mutexLock(&pkgMutex);
+
+        if (poll_res == 0)
+        {
+            fakeConsState = temporal_pkg;
+        }
+        else
+        {
+            fakeConsState.magic = 0;
+            svcSleepThread(1e+7l);
+        }
+        mutexUnlock(&pkgMutex);
+
+        svcSleepThread(-1);
+    }
 }

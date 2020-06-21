@@ -89,6 +89,9 @@ extern "C" {
         if (R_FAILED(rc))
             fatalThrow(MAKERESULT(Module_Libnx, LibnxError_InitFail_HID));
 
+        //rc = socketInitialize(&sockInitConf);
+        //if (R_FAILED(rc))
+        //    fatalThrow(rc);
         
     }
 

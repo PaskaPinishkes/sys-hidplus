@@ -1,6 +1,7 @@
 // Most of the UDP code comes from hid-mitm: https://github.com/jakibaki/hid-mitm
 
 #include "udp_manager.hpp"
+#include "con_manager.hpp"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -99,6 +100,7 @@ int poll_udp_input(input_message *buf)
     {
         failed = 0;
         cached_message = temp_message;
+        printToFile("Connectivity: HUGE SUCCESS");
     }
     *buf = cached_message;
 
