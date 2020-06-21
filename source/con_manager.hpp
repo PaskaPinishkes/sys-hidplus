@@ -16,6 +16,7 @@ public:
     HiddbgHdlsDeviceInfo controllerDevice = {0};
     HiddbgHdlsState controllerState = {0};
     int initialize();
+    int deInitialize();
     bool isInitialized = false;
     
 };

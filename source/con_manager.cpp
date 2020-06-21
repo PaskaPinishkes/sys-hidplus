@@ -35,23 +35,61 @@ int FakeController::initialize()
     return 0;
 }
 
-FakeController testController2;
+int FakeController::deInitialize()
+{
+    if (isInitialized == false) return 0;
+    Result myResult;
+    
+    myResult = hiddbgDetachHdlsVirtualDevice(controllerHandle);
+    if (R_FAILED(myResult)) {
+        return -1;
+    }
+
+    isInitialized = false;
+    return 0;
+}
+
+FakeController fakeControllerList [4];
+s16 controllersConnected = 0;
+u64 last_time_recorded;
+
 void apply_fake_con_state(struct input_message message)
 {
+    u64 tmp_time_recorded = svcGetSystemTick();
+    if (tmp_time_recorded - last_time_recorded > (19200000 / 10) && controllersConnected > 0)
+    {
+        // Detect Sleep Mode
+        svcSleepThread(5e+8L);
+        
+        // Since we woke up from Sleep Mode, we'll disconnect each controller
+        for (int i = 0; i < controllersConnected; i++)
+        {
+            fakeControllerList[i].deInitialize();
+        }
+        controllersConnected = 0;
+
+        tmp_time_recorded = svcGetSystemTick();
+    }
+    last_time_recorded = tmp_time_recorded;
+
+    // Check if the magic is correct
     if(message.magic != INPUT_MSG_MAGIC)
         return;
     
-    if (testController2.isInitialized == false)
+    // If there is no controller connected, we have to initialize one
+    if (fakeControllerList[0].isInitialized == false)
     {
-        testController2.initialize();
+        fakeControllerList[0].initialize();
+        controllersConnected++;
     }
 
-    testController2.controllerState.buttons = message.keys;
-    testController2.controllerState.joysticks[0].dx = message.joy_l_x;
-    testController2.controllerState.joysticks[0].dy = message.joy_l_y;
-    testController2.controllerState.joysticks[1].dx = message.joy_r_x;
-    testController2.controllerState.joysticks[1].dy = message.joy_r_y;
-    hiddbgSetHdlsState(testController2.controllerHandle, &testController2.controllerState);
+    // Set the controller sticks and joystick according to what the network told us
+    fakeControllerList[0].controllerState.buttons = message.keys;
+    fakeControllerList[0].controllerState.joysticks[0].dx = message.joy_l_x;
+    fakeControllerList[0].controllerState.joysticks[0].dy = message.joy_l_y;
+    fakeControllerList[0].controllerState.joysticks[1].dx = message.joy_r_x;
+    fakeControllerList[0].controllerState.joysticks[1].dy = message.joy_r_y;
+    hiddbgSetHdlsState(fakeControllerList[0].controllerHandle, &fakeControllerList[0].controllerState);
     
     return;
 }

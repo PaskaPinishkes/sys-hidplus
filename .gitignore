@@ -2,6 +2,7 @@
 *.log*
 /build/*
 /release/*
+/sendtoftp/*
 *.elf
 *.nacp
 *.nsp
