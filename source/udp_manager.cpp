@@ -27,7 +27,7 @@ void setup_socket()
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {
         perror("failed to create the socket");
-        printToFile("COULDN'T CREATE SOCKET!");
+        //printToFile("COULDN'T CREATE SOCKET!");
         exit(EXIT_FAILURE);
     }
 
@@ -43,7 +43,7 @@ void setup_socket()
     servaddr.sin_addr.s_addr = INADDR_ANY;
     servaddr.sin_port = htons(PORT);
 
-    printToFile("SOCKET CREATION SUCCESS!");
+    //printToFile("SOCKET CREATION SUCCESS!");
 
     bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr));
 }
@@ -107,7 +107,7 @@ int poll_udp_input(struct input_message *buf)
     {
         failed = 0;
         cached_message = temp_message;
-        printToFile("Connectivity: HUGE SUCCESS");
+        //printToFile("Connectivity: HUGE SUCCESS");
     }
     *buf = cached_message;
 

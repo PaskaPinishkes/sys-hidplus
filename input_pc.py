@@ -9,14 +9,25 @@ import _thread
 #This input_pc.py only works on hid-plus and won't work with hid-mitm or any fork of it
 
 #Controller Types:
-#0 - none (disconnect controller from switch)
+#0 - none (disconnects controller from switch)
 #1 - Pro Controller
-#2 - Joy-Cons (L and R)
-#3 - Joy-Con (L sideways)
-#4 - Joy-Con (R sideways)
+#2 - Joy-Con (L sideways) [DISABLES L AND ZL BUTTONS ON THE VIRTUAL JOY-CON FOR NOW]
+#3 - Joy-Con (R sideways) [DISABLES R AND ZR BUTTONS ON THE VIRTUAL JOY-CON FOR NOW]
 # TO BE ADDED:
+#4 - Joy-Cons (L and R)
 #5 - Joy-Con (L)
 #6 - Joy-Con (R)
+
+#Modify these values to change the controller type:
+#Player 1:
+conType = 2
+#Player 2:
+twoConType = 1
+#Player 3:
+threeConType = 1
+#Player 4:
+fourConType = 1
+
 
 keys = {
     "A": 1,
@@ -42,7 +53,11 @@ keys = {
     "RL": 1 << 20,
     "RU": 1 << 21,
     "RR": 1 << 22,
-    "RD": 1 << 23
+    "RD": 1 << 23,
+    "SLL": 1 << 24, # SL (JOY-CON LEFT ONLY)
+    "SRL": 1 << 25, # SR (JOY-CON LEFT ONLY)
+    "SLR": 1 << 26, # SL (JOY-CON RIGHT ONLY)
+    "SRR": 1 << 27 # SR (JOY-CON RIGHT ONLY)
 }
 
 
@@ -54,7 +69,7 @@ def set_del_bit(bit, status, out):
     return out
 
 
-def check_keys(key, status, out):
+def check_keys(key, status, out, controllerType):
 
     # for i in range(13):
     #     print(joystick.get_button(i))
@@ -78,11 +93,6 @@ def check_keys(key, status, out):
     if key == "BTN_DPAD_LEFT":
         out = set_del_bit(keys["DL"], status, out)
 
-    if key == "BTN_TL":
-        out = set_del_bit(keys["L"], status, out)
-    if key == "BTN_TR":
-        out = set_del_bit(keys["R"], status, out)
-
     if key == "BTN_TL2":
         out = set_del_bit(keys["ZL"], status, out)
     if key == "BTN_TR2":
@@ -97,6 +107,28 @@ def check_keys(key, status, out):
         out = set_del_bit(keys["MINUS"], status, out)
     if key == "BTN_SELECT":
         out = set_del_bit(keys["PLUS"], status, out)
+
+    # The following change depending on the controller
+
+    if controllerType == 1:
+        if key == "BTN_TL":
+            out = set_del_bit(keys["L"], status, out)
+        if key == "BTN_TR":
+            out = set_del_bit(keys["R"], status, out)
+    
+    if controllerType == 2:
+        if key == "BTN_TL":
+            #out = set_del_bit(keys["SLL"], status, out)
+            out = set_del_bit(keys["SLL"], status, out)
+        if key == "BTN_TR":
+            #out = set_del_bit(keys["SRL"], status, out)
+            out = set_del_bit(keys["SRL"], status, out)
+    
+    if controllerType == 3:
+        if key == "BTN_TL":
+            out = set_del_bit(keys["SLR"], status, out)
+        if key == "BTN_TR":
+            out = set_del_bit(keys["SRR"], status, out)
 
     return out
 
@@ -181,9 +213,10 @@ def input_poller():
     global dy_l
     global dx_r
     global dy_r
+    global conType
     usedGamepad = gamepadList[0]
     while(True):
-        print(usedGamepad.id, " READING...")
+        #print(usedGamepad.id, " READING...")
         try:
             events = usedGamepad.pad.read()
         except:
@@ -192,7 +225,7 @@ def input_poller():
 
         for event in events:
             if event.ev_type == "Key":
-                keyout = check_keys(event.code, event.state, keyout)
+                keyout = check_keys(event.code, event.state, keyout, conType)
             elif event.ev_type == "Absolute":
                 if(event.code == "ABS_X"):
                     if gamepad_type == "Sony PLAYSTATION(R)3 Controller":
@@ -225,36 +258,42 @@ def input_poller():
                 if gamepad_type != "Sony PLAYSTATION(R)3 Controller":
                     if(event.code == "ABS_Z"):
                         if event.state >= 100:
-                            keyout = check_keys("BTN_TL2", 1, keyout)
+                            keyout = check_keys("BTN_TL2", 1, keyout, conType)
                         else:
-                            keyout = check_keys("BTN_TL2", 0, keyout)
+                            keyout = check_keys("BTN_TL2", 0, keyout, conType)
                     if(event.code == "ABS_RZ"):
                         if event.state >= 100:
-                            keyout = check_keys("BTN_TR2", 1, keyout)
+                            keyout = check_keys("BTN_TR2", 1, keyout, conType)
                         else:
-                            keyout = check_keys("BTN_TR2", 0, keyout)
+                            keyout = check_keys("BTN_TR2", 0, keyout, conType)
                     if(event.code == "ABS_HAT0X"):
                         if event.state == 0:
-                            keyout = check_keys("BTN_DPAD_LEFT", 0, keyout)
-                            keyout = check_keys("BTN_DPAD_RIGHT", 0, keyout)
+                            keyout = check_keys("BTN_DPAD_LEFT", 0, keyout, conType)
+                            keyout = check_keys("BTN_DPAD_RIGHT", 0, keyout, conType)
                         if event.state == 1:
-                            keyout = check_keys("BTN_DPAD_RIGHT", 1, keyout)
+                            keyout = check_keys("BTN_DPAD_RIGHT", 1, keyout, conType)
                         if event.state == -1:
-                            keyout = check_keys("BTN_DPAD_LEFT", 1, keyout)
+                            keyout = check_keys("BTN_DPAD_LEFT", 1, keyout, conType)
                     if(event.code == "ABS_HAT0Y"):
                         if event.state == 0:
-                            keyout = check_keys("BTN_DPAD_UP", 0, keyout)
-                            keyout = check_keys("BTN_DPAD_DOWN", 0, keyout)
+                            keyout = check_keys("BTN_DPAD_UP", 0, keyout, conType)
+                            keyout = check_keys("BTN_DPAD_DOWN", 0, keyout, conType)
                         if event.state == 1:
-                            keyout = check_keys("BTN_DPAD_DOWN", 1, keyout)
+                            keyout = check_keys("BTN_DPAD_DOWN", 1, keyout, conType)
                         if event.state == -1:
-                            keyout = check_keys("BTN_DPAD_UP", 1, keyout)
+                            keyout = check_keys("BTN_DPAD_UP", 1, keyout, conType)
 
         usedGamepad.keys = keyout
-        usedGamepad.dx_l = dx_l
-        usedGamepad.dx_r = dx_r
-        usedGamepad.dy_l = dy_l
-        usedGamepad.dy_r = dy_r
+        if conType == 1:
+            usedGamepad.dx_l = dx_l
+            usedGamepad.dx_r = dx_r
+            usedGamepad.dy_l = dy_l
+            usedGamepad.dy_r = dy_r
+        else:
+            usedGamepad.dx_l = dx_l
+            usedGamepad.dx_r = dx_r
+            usedGamepad.dy_l = dy_l
+            usedGamepad.dy_r = dy_r
 
 def inputTwo_poller():
     global twoKeyout
@@ -548,6 +587,6 @@ while(True):
     
     #INPUTS!                                    MAGIC-  KEYS FROM GAMEPAD 1  AMOUNT OF CONS-  STICKS FROM GAMEPAD 1---------------------------------------------------------------  KEYS FROM GAMEPAD 2  STICKS FROM GAMEPAD 2---------------------------------------------------------------  KEYS FROM GAMEPAD 3  STICKS FROM GAMEPAD 3---------------------------------------------------------------  KEYS FROM GAMEPAD 4  STICKS FROM GAMEPAD 4---------------------------------------------------------------
     #sock.sendto(pack("<HQHiiiiQiiiiQiiiiQiiii", 0x3276, gamepadList[0].keys, controllerCount, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r, gamepadList[1].keys, gamepadList[1].dx_l, -gamepadList[1].dy_l, gamepadList[1].dx_r, -gamepadList[1].dy_r, gamepadList[2].keys, gamepadList[2].dx_l, -gamepadList[2].dy_l, gamepadList[2].dx_r, -gamepadList[2].dy_r, gamepadList[3].keys, gamepadList[3].dx_l, -gamepadList[3].dy_l, gamepadList[3].dx_r, -gamepadList[3].dy_r), server_address)
-    sock.sendto(pack("<HQiiii", 0x3276, gamepadList[0].keys, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r), server_address)
+    sock.sendto(pack("<HHQiiii", 0x3276, conType, gamepadList[0].keys, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r), server_address)
     print("P1: ", gamepadList[0].keys, " P2: ", gamepadList[1].keys, " P3: ", gamepadList[2].keys, " P4: ", gamepadList[3].keys)
     sleep(1/60)

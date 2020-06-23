@@ -2,27 +2,56 @@
 #include "udp_manager.hpp"
 #include <mutex>
 
-int FakeController::initialize()
+int FakeController::initialize(u16 conDeviceType)
 {
     if (isInitialized == true) return 0;
     Result myResult;
     //printToFile("Controller initializing...");
 
     // Set the controller type to Pro-Controller, and set the npadInterfaceType.
-    controllerDevice.deviceType = HidDeviceType_FullKey3; // FullKey3 for Pro Controller, JoyLeft4 for left joy con
-    controllerDevice.npadInterfaceType = NpadInterfaceType_Bluetooth;
+    
+
+    switch(conDeviceType)
+    {
+        case 1:
+            controllerDevice.deviceType = HidDeviceType_FullKey3; // Pro Controller
+            break;
+        
+        case 2:
+            controllerDevice.deviceType = HidDeviceType_JoyLeft2; // Joy-Con Left
+            break;
+
+        case 3:
+            controllerDevice.deviceType = HidDeviceType_JoyRight1; // Joy-Con Right
+            break;
+
+    }
+
     // Set the controller colors. The grip colors are for Pro-Controller on [9.0.0+].
     controllerDevice.singleColorBody = RGBA8_MAXALPHA(255,153,204);
     controllerDevice.singleColorButtons = RGBA8_MAXALPHA(0,0,0);
-    controllerDevice.colorLeftGrip = RGBA8_MAXALPHA(255,0,127);
-    controllerDevice.colorRightGrip = RGBA8_MAXALPHA(255,0,127);
+    if (conDeviceType == 1)
+    {
+        controllerDevice.colorLeftGrip = RGBA8_MAXALPHA(255,0,127);
+        controllerDevice.colorRightGrip = RGBA8_MAXALPHA(255,0,127);
+    }
+    
+    controllerDevice.npadInterfaceType = NpadInterfaceType_Bluetooth;
 
     // Setup example controller state.
     controllerState.batteryCharge = 4; // Set battery charge to full.
-    controllerState.joysticks[JOYSTICK_LEFT].dx = 0x0;
-    controllerState.joysticks[JOYSTICK_LEFT].dy = -0x0;
-    controllerState.joysticks[JOYSTICK_RIGHT].dx = 0x0;
-    controllerState.joysticks[JOYSTICK_RIGHT].dy = -0x0;
+
+    if (conDeviceType == 1 || conDeviceType == 2)
+    {
+        controllerState.joysticks[JOYSTICK_LEFT].dx = 0x0;
+        controllerState.joysticks[JOYSTICK_LEFT].dy = -0x0;
+    }
+
+    if (conDeviceType == 1 || conDeviceType == 3)
+    {
+        controllerState.joysticks[JOYSTICK_RIGHT].dx = 0x0;
+        controllerState.joysticks[JOYSTICK_RIGHT].dy = -0x0;
+    }
     
     myResult = hiddbgAttachHdlsVirtualDevice(&controllerHandle, &controllerDevice);
     if (R_FAILED(myResult)) {
@@ -39,57 +68,74 @@ int FakeController::deInitialize()
 {
     if (isInitialized == false) return 0;
     Result myResult;
+
+    controllerState = {0};
+    hiddbgSetHdlsState(controllerHandle, &controllerState);
     
     myResult = hiddbgDetachHdlsVirtualDevice(controllerHandle);
     if (R_FAILED(myResult)) {
         return -1;
     }
+    controllerHandle = 0;
+    controllerDevice = {0};
 
     isInitialized = false;
+
     return 0;
 }
 
 FakeController fakeControllerList [4];
 s16 controllersConnected = 0;
-u64 last_time_recorded;
+u64 buttonPresses;
 
 void apply_fake_con_state(struct input_message message)
 {
-    u64 tmp_time_recorded = svcGetSystemTick();
-    if (tmp_time_recorded - last_time_recorded > (19200000 / 10) && controllersConnected > 0)
-    {
-        // Detect Sleep Mode
-        svcSleepThread(5e+8L);
-        
-        // Since we woke up from Sleep Mode, we'll disconnect each controller
-        for (int i = 0; i < controllersConnected; i++)
-        {
-            fakeControllerList[i].deInitialize();
-        }
-        controllersConnected = 0;
-
-        tmp_time_recorded = svcGetSystemTick();
-    }
-    last_time_recorded = tmp_time_recorded;
-
     // Check if the magic is correct
     if(message.magic != INPUT_MSG_MAGIC)
         return;
     
     // If there is no controller connected, we have to initialize one
-    if (fakeControllerList[0].isInitialized == false)
+    if (fakeControllerList[0].isInitialized == false && (message.con_type > 0 && message.con_type < 4))
     {
-        fakeControllerList[0].initialize();
+        fakeControllerList[0].initialize(message.con_type);
         controllersConnected++;
+    } 
+    // If there is a controller connected, but we changed the controller type to a non-existant one, we'll disconnect it
+    else if (fakeControllerList[0].isInitialized == true && (message.con_type < 1 || message.con_type > 3))
+    {
+        fakeControllerList[0].deInitialize();
+        FakeController tempCon;
+        fakeControllerList[0] = tempCon;
     }
 
-    // Set the controller sticks and joystick according to what the network told us
-    fakeControllerList[0].controllerState.buttons = message.keys;
-    fakeControllerList[0].controllerState.joysticks[0].dx = message.joy_l_x;
-    fakeControllerList[0].controllerState.joysticks[0].dy = message.joy_l_y;
-    fakeControllerList[0].controllerState.joysticks[1].dx = message.joy_r_x;
-    fakeControllerList[0].controllerState.joysticks[1].dy = message.joy_r_y;
-    hiddbgSetHdlsState(fakeControllerList[0].controllerHandle, &fakeControllerList[0].controllerState);
+    if (fakeControllerList[0].isInitialized == true)
+    {
+        buttonPresses = message.keys;
+        if (message.con_type != 1)
+        {
+            if (message.keys & KEY_L)
+            {
+                buttonPresses &= ~KEY_L;
+                buttonPresses |= KEY_SL;
+            }
+
+            if (message.keys & KEY_R)
+            {
+                buttonPresses &= ~KEY_R;
+                buttonPresses |= KEY_SR;
+            }
+        }
+        
+        // Set the controller sticks and joystick according to what the network told us
+        fakeControllerList[0].controllerState.buttons = buttonPresses;
+        fakeControllerList[0].controllerState.joysticks[0].dx = message.joy_l_x;
+        fakeControllerList[0].controllerState.joysticks[0].dy = message.joy_l_y;
+        fakeControllerList[0].controllerState.joysticks[1].dx = message.joy_r_x;
+        fakeControllerList[0].controllerState.joysticks[1].dy = message.joy_r_y;
+        hiddbgSetHdlsState(fakeControllerList[0].controllerHandle, &fakeControllerList[0].controllerState);
+
+        
+    }
     
     return;
 }

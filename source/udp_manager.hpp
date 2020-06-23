@@ -7,10 +7,10 @@ extern "C" {
     //Controller Types:
     //0 - none (disconnect controller from switch)
     //1 - Pro Controller
-    //2 - Joy-Cons (L and R)
-    //3 - Joy-Con (L sideways)
-    //4 - Joy-Con (R sideways)
+    //2 - Joy-Con (L sideways)
+    //3 - Joy-Con (R sideways)
     // TO BE ADDED:
+    //4 - Joy-Cons (L and R)
     //5 - Joy-Con (L)
     //6 - Joy-Con (R)
 
@@ -18,6 +18,7 @@ extern "C" {
     {
     public:
         u16 magic;
+        u16 con_type;
         u64 keys;
         s32 joy_l_x;
         s32 joy_l_y;
