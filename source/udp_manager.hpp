@@ -24,6 +24,24 @@ extern "C" {
         s32 joy_l_y;
         s32 joy_r_x;
         s32 joy_r_y;
+        u16 con_type2;
+        u64 keys2;
+        s32 joy_l_x2;
+        s32 joy_l_y2;
+        s32 joy_r_x2;
+        s32 joy_r_y2;
+        u16 con_type3;
+        u64 keys3;
+        s32 joy_l_x3;
+        s32 joy_l_y3;
+        s32 joy_r_x3;
+        s32 joy_r_y3;
+        u16 con_type4;
+        u64 keys4;
+        s32 joy_l_x4;
+        s32 joy_l_y4;
+        s32 joy_r_x4;
+        s32 joy_r_y4;
     };
 
     int poll_udp_input(input_message* buf);

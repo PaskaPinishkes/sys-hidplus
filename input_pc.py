@@ -75,14 +75,23 @@ def check_keys(key, status, out, controllerType):
     #     print(joystick.get_button(i))
     # print("--")
 
+    #if key == "BTN_NORTH":
+    #    out = set_del_bit(keys["X"], status, out)
+    #if key == "BTN_EAST":
+    #    out = set_del_bit(keys["A"], status, out)
+    #if key == "BTN_SOUTH":
+    #    out = set_del_bit(keys["B"], status, out)
+    #if key == "BTN_WEST":
+    #    out = set_del_bit(keys["Y"], status, out)
+
     if key == "BTN_NORTH":
-        out = set_del_bit(keys["X"], status, out)
+        out = set_del_bit(keys["DR"], status, out)
     if key == "BTN_EAST":
-        out = set_del_bit(keys["A"], status, out)
+        out = set_del_bit(keys["DD"], status, out)
     if key == "BTN_SOUTH":
-        out = set_del_bit(keys["B"], status, out)
+        out = set_del_bit(keys["DL"], status, out)
     if key == "BTN_WEST":
-        out = set_del_bit(keys["Y"], status, out)
+        out = set_del_bit(keys["DU"], status, out)
 
     if key == "BTN_DPAD_UP":
         out = set_del_bit(keys["DU"], status, out)
@@ -587,6 +596,6 @@ while(True):
     
     #INPUTS!                                    MAGIC-  KEYS FROM GAMEPAD 1  AMOUNT OF CONS-  STICKS FROM GAMEPAD 1---------------------------------------------------------------  KEYS FROM GAMEPAD 2  STICKS FROM GAMEPAD 2---------------------------------------------------------------  KEYS FROM GAMEPAD 3  STICKS FROM GAMEPAD 3---------------------------------------------------------------  KEYS FROM GAMEPAD 4  STICKS FROM GAMEPAD 4---------------------------------------------------------------
     #sock.sendto(pack("<HQHiiiiQiiiiQiiiiQiiii", 0x3276, gamepadList[0].keys, controllerCount, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r, gamepadList[1].keys, gamepadList[1].dx_l, -gamepadList[1].dy_l, gamepadList[1].dx_r, -gamepadList[1].dy_r, gamepadList[2].keys, gamepadList[2].dx_l, -gamepadList[2].dy_l, gamepadList[2].dx_r, -gamepadList[2].dy_r, gamepadList[3].keys, gamepadList[3].dx_l, -gamepadList[3].dy_l, gamepadList[3].dx_r, -gamepadList[3].dy_r), server_address)
-    sock.sendto(pack("<HHQiiii", 0x3276, conType, gamepadList[0].keys, gamepadList[0].dx_l, -gamepadList[0].dy_l, gamepadList[0].dx_r, -gamepadList[0].dy_r), server_address)
+    sock.sendto(pack("<HHQiiii", 0x3276, conType, gamepadList[0].keys, -gamepadList[0].dy_l, -gamepadList[0].dx_l, gamepadList[0].dx_r, -gamepadList[0].dy_r), server_address)
     print("P1: ", gamepadList[0].keys, " P2: ", gamepadList[1].keys, " P3: ", gamepadList[2].keys, " P4: ", gamepadList[3].keys)
     sleep(1/60)

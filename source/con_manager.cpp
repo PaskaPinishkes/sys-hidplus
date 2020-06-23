@@ -2,6 +2,8 @@
 #include "udp_manager.hpp"
 #include <mutex>
 
+// Some of the code comes from hid-mitm
+
 int FakeController::initialize(u16 conDeviceType)
 {
     if (isInitialized == true) return 0;
@@ -40,6 +42,7 @@ int FakeController::initialize(u16 conDeviceType)
 
     // Setup example controller state.
     controllerState.batteryCharge = 4; // Set battery charge to full.
+    controllerState.flags |= HidFlags::slSrButtonOriented;
 
     if (conDeviceType == 1 || conDeviceType == 2)
     {
@@ -110,7 +113,7 @@ void apply_fake_con_state(struct input_message message)
 
     if (fakeControllerList[0].isInitialized == true)
     {
-        buttonPresses = message.keys;
+        /*buttonPresses = message.keys;
         if (message.con_type != 1)
         {
             if (message.keys & KEY_L)
@@ -124,10 +127,10 @@ void apply_fake_con_state(struct input_message message)
                 buttonPresses &= ~KEY_R;
                 buttonPresses |= KEY_SR;
             }
-        }
+        }*/
         
         // Set the controller sticks and joystick according to what the network told us
-        fakeControllerList[0].controllerState.buttons = buttonPresses;
+        fakeControllerList[0].controllerState.buttons = message.buttons;
         fakeControllerList[0].controllerState.joysticks[0].dx = message.joy_l_x;
         fakeControllerList[0].controllerState.joysticks[0].dy = message.joy_l_y;
         fakeControllerList[0].controllerState.joysticks[1].dx = message.joy_r_x;
