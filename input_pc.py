@@ -220,7 +220,7 @@ for i in range(0, 7):
 def print_info():
     if (gamepadList[0].keys + gamepadList[1].keys + gamepadList[2].keys + gamepadList[3].keys == 0):
         return
-    print("P1: ", gamepadList[0].keys, " P2: ", gamepadList[1].keys, " P3: ", gamepadList[2].keys, " P4: ", gamepadList[3].keys)
+    print("P1: ", gamepadList[0].keys, " P2: ", gamepadList[1].keys, " P3: ", gamepadList[2].keys)#, " P4: ", gamepadList[3].keys)
 
 
 print(gamepad_type, "Controllers connected:", controllerCount)
