@@ -100,7 +100,7 @@ int poll_udp_input(struct input_message *buf)
         failed++;
         if (n > 0)
         {
-            printToFile("BRUH THAT MAGIC IS NOT REAL GET THE F OUT OF HERE");
+            //printToFile("BRUH THAT MAGIC IS NOT REAL GET THE F OUT OF HERE");
         }
     }
     else
