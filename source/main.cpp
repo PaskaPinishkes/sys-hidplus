@@ -7,7 +7,6 @@
 #include <switch.h>
 
 // Other stuff
-#include <malloc.h>
 #include "con_manager.hpp"
 #include "udp_manager.hpp"
 #include <cstdlib>
@@ -149,13 +148,16 @@ extern "C" {
     }
 }
 
+static Mutex fileMutex;
 int printToFile(const char* myString)
 {
+    mutexLock(&fileMutex);
     FILE *log = fopen("/hidplus/log.txt", "w+a");
     if (log != nullptr) {
-            fprintf(log, myString);
+            fprintf(log, "%s\n", myString);
             fclose(log);
     }
+    mutexUnlock(&fileMutex);
     return 0;
 }
 
@@ -169,7 +171,8 @@ int main(int argc, char* argv[])
     // Your code / main loop goes here.
     // If you need threads, you can use threadCreate etc.
 
-    printToFile("READY!");
+    printToFile("READY NEW!");
+    printToFile("MEGA READY! :)");
     FakeController testController;
     
     threadCreate(&network_thread, networkThread, NULL, NULL, 0x1000, 0x30, 3);
@@ -177,10 +180,9 @@ int main(int argc, char* argv[])
     
     while (appletMainLoop()) // Main loop
     {
-
         hidScanInput();
 
-        u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
+        //u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 
         /*if (kDown & KEY_PLUS)
         {
