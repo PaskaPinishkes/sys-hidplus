@@ -3,7 +3,7 @@ A Nintendo Switch sysmodule to use up to 3 inputs over the network and useful to
 
 
 # Disclaimer
-Bugs occur and I'm in no way responsible of any damage caused by this sysmodule or its misuse. If you get any issue, please report it on the Issues tab or report it on the gbatemp thread of this sysmodule.
+Bugs occur and I'm in no way responsible of any damage caused by this sysmodule or its misuse. If you get any issue, please report it on the Issues tab or report it on the gbatemp thread.
 
 
 # Instructions
