@@ -3,6 +3,7 @@
 /build/*
 /release/*
 /sendtoftp/*
+/atmosphere/*
 *.elf
 *.nacp
 *.nsp
@@ -10,3 +11,4 @@
 *.nso
 *.npdm
 *.bat
+.vscode/c_cpp_properties.json

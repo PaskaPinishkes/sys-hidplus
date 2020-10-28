@@ -6,7 +6,7 @@
 
 int FakeController::initialize(u16 conDeviceType)
 {
-    if (isInitialized == true) return 0;
+    if (isInitialized) return 0;
     Result myResult;
     //printToFile("Controller initializing...");
 
@@ -42,7 +42,6 @@ int FakeController::initialize(u16 conDeviceType)
 
     // Setup example controller state.
     controllerState.batteryCharge = 4; // Set battery charge to full.
-    controllerState.flags |= HidFlags::slSrButtonOriented;
 
     if (conDeviceType == 1 || conDeviceType == 2)
     {
@@ -58,7 +57,7 @@ int FakeController::initialize(u16 conDeviceType)
     
     myResult = hiddbgAttachHdlsVirtualDevice(&controllerHandle, &controllerDevice);
     if (R_FAILED(myResult)) {
-        //printToFile("Failed connecting controller... fuck");
+        printToFile("Failed connecting controller... fuck");
         return -1;
     }
 
@@ -69,7 +68,7 @@ int FakeController::initialize(u16 conDeviceType)
 
 int FakeController::deInitialize()
 {
-    if (isInitialized == false) return 0;
+    if (!isInitialized) return 0;
     Result myResult;
 
     controllerState = {0};
@@ -88,7 +87,6 @@ int FakeController::deInitialize()
 }
 
 FakeController fakeControllerList [4];
-s16 controllersConnected = 0;
 u64 buttonPresses;
 
 void apply_fake_con_state(struct input_message message)
@@ -96,24 +94,82 @@ void apply_fake_con_state(struct input_message message)
     // Check if the magic is correct
     if(message.magic != INPUT_MSG_MAGIC)
         return;
-    
-    // If there is no controller connected, we have to initialize one
-    if (fakeControllerList[0].isInitialized == false && (message.con_type > 0 && message.con_type < 4))
-    {
-        fakeControllerList[0].initialize(message.con_type);
-        controllersConnected++;
-    } 
-    // If there is a controller connected, but we changed the controller type to a non-existant one, we'll disconnect it
-    else if (fakeControllerList[0].isInitialized == true && (message.con_type < 1 || message.con_type > 3))
-    {
-        fakeControllerList[0].deInitialize();
-        FakeController tempCon;
-        fakeControllerList[0] = tempCon;
-    }
 
-    if (fakeControllerList[0].isInitialized == true)
+    u16 conType;
+    u64 keys;
+    s32 joylx;
+    s32 joyly;
+    s32 joyrx;
+    s32 joyry;
+
+    for(s32 i = 0; i < message.con_count; i++)
     {
-        /*buttonPresses = message.keys;
+        switch(i)
+        {
+            case 0:
+                conType = message.con_type;
+                keys = message.keys;
+                joylx = message.joy_l_x;
+                joyly = message.joy_l_y;
+                joyrx = message.joy_r_x;
+                joyry = message.joy_r_y;
+                break;
+            case 1:
+                conType = message.con_type2;
+                keys = message.keys2;
+                joylx = message.joy_l_x2;
+                joyly = message.joy_l_y2;
+                joyrx = message.joy_r_x2;
+                joyry = message.joy_r_y2;
+                break;
+            case 2:
+                conType = message.con_type3;
+                keys = message.keys3;
+                joylx = message.joy_l_x3;
+                joyly = message.joy_l_y3;
+                joyrx = message.joy_r_x3;
+                joyry = message.joy_r_y3;
+                break;/*
+            case 3:
+                conType = message.con_type4;
+                keys = message.keys4;
+                joylx = message.joy_l_x4;
+                joyly = message.joy_l_y4;
+                joyrx = message.joy_r_x4;
+                joyry = message.joy_r_y4;
+                break;*/
+        }
+
+        // If there is no controller connected, we have to initialize one
+        if (!fakeControllerList[i].isInitialized && (conType > 0 && conType < 4))
+        {
+            fakeControllerList[i].initialize(conType);
+        } 
+        // If there is a controller connected, but we changed the controller type to a non-existant one, we'll disconnect it
+        else if (fakeControllerList[i].isInitialized && (conType < 1 || conType > 3))
+        {
+            fakeControllerList[i].deInitialize();
+            FakeController tempCon;
+            fakeControllerList[i] = tempCon;
+        }
+
+        if (fakeControllerList[i].isInitialized)
+        {
+            fakeControllerList[i].controllerState.buttons = keys;
+            fakeControllerList[i].controllerState.joysticks[0].dx = joylx;
+            fakeControllerList[i].controllerState.joysticks[0].dy = joyly;
+            fakeControllerList[i].controllerState.joysticks[1].dx = joyrx;
+            fakeControllerList[i].controllerState.joysticks[1].dy = joyry;
+            hiddbgSetHdlsState(fakeControllerList[i].controllerHandle, &fakeControllerList[i].controllerState);
+        }
+    }
+    
+    
+    
+
+    /*if (fakeControllerList[0].isInitialized)
+    {
+        buttonPresses = message.keys;
         if (message.con_type != 1)
         {
             if (message.keys & KEY_L)
@@ -127,18 +183,13 @@ void apply_fake_con_state(struct input_message message)
                 buttonPresses &= ~KEY_R;
                 buttonPresses |= KEY_SR;
             }
-        }*/
+        }
         
         // Set the controller sticks and joystick according to what the network told us
-        fakeControllerList[0].controllerState.buttons = message.buttons;
-        fakeControllerList[0].controllerState.joysticks[0].dx = message.joy_l_x;
-        fakeControllerList[0].controllerState.joysticks[0].dy = message.joy_l_y;
-        fakeControllerList[0].controllerState.joysticks[1].dx = message.joy_r_x;
-        fakeControllerList[0].controllerState.joysticks[1].dy = message.joy_r_y;
-        hiddbgSetHdlsState(fakeControllerList[0].controllerHandle, &fakeControllerList[0].controllerState);
+        
 
         
-    }
+    }*/
     
     return;
 }
@@ -149,6 +200,7 @@ static struct input_message fakeConsState;
 void networkThread(void* _)
 {
     struct input_message temporal_pkg;
+    printToFile("Starting Thread!");
     while (true)
     {
         int poll_res = poll_udp_input(&temporal_pkg);

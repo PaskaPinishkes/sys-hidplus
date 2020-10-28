@@ -18,6 +18,7 @@ extern "C" {
     {
     public:
         u16 magic;
+        u16 con_count;
         u16 con_type;
         u64 keys;
         s32 joy_l_x;
@@ -36,12 +37,6 @@ extern "C" {
         s32 joy_l_y3;
         s32 joy_r_x3;
         s32 joy_r_y3;
-        u16 con_type4;
-        u64 keys4;
-        s32 joy_l_x4;
-        s32 joy_l_y4;
-        s32 joy_r_x4;
-        s32 joy_r_y4;
     };
 
     int poll_udp_input(input_message* buf);
