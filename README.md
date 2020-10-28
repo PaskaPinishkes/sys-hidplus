@@ -1,5 +1,9 @@
 # sys-hidplus
-A Nintendo Switch sysmodule to use up to 3 inputs over the network and useful to use with services such as Parsec for remote play.
+A Nintendo Switch sysmodule to use up to 3 inputs over the network and useful to use with services such as Parsec for remote play
+
+
+# Disclaimer
+Bugs occur and I'm in no way responsible of any damage caused by this sysmodule or its misuse. If you get any issue, please report it on the Issues tab or report it on the gbatemp thread of this sysmodule.
 
 
 # Instructions
