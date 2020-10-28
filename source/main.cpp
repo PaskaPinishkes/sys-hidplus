@@ -15,6 +15,9 @@
 #include <optional>
 #include <mutex>
 
+// Log text file bool
+const bool IsRelease = true;
+
 static const SocketInitConfig sockInitConf = {
     .bsdsockets_version = 1,
 
@@ -151,6 +154,8 @@ extern "C" {
 static Mutex fileMutex;
 int printToFile(const char* myString)
 {
+    if (IsRelease)
+        return;
     mutexLock(&fileMutex);
     FILE *log = fopen("/hidplus/log.txt", "w+a");
     if (log != nullptr) {

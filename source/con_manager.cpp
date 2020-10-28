@@ -129,8 +129,8 @@ void apply_fake_con_state(struct input_message message)
                 joyly = message.joy_l_y3;
                 joyrx = message.joy_r_x3;
                 joyry = message.joy_r_y3;
-                break;/*
-            case 3:
+                break;
+            /*case 3:
                 conType = message.con_type4;
                 keys = message.keys4;
                 joylx = message.joy_l_x4;
