@@ -76,6 +76,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export NSPOUTPUT := $(CURDIR)/atmosphere/contents/4200000000001312/exefs
 export TOPDIR	:=	$(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
@@ -170,7 +171,7 @@ clean:
 ifeq ($(strip $(APP_JSON)),)
 	@rm -fr $(BUILD) $(TARGET).nro $(TARGET).nacp $(TARGET).elf
 else
-	@rm -fr $(BUILD) $(TARGET).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf
+	@rm -fr $(BUILD) $(NSPOUTPUT).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf
 endif
 
 
@@ -183,12 +184,12 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-all	:	$(OUTPUT).nsp
+all	:	$(NSPOUTPUT).nsp
 
 ifeq ($(strip $(APP_JSON)),)
-$(OUTPUT).nsp	:	$(OUTPUT).nso
+$(NSPOUTPUT).nsp	:	$(OUTPUT).nso
 else
-$(OUTPUT).nsp	:	$(OUTPUT).nso $(OUTPUT).npdm
+$(NSPOUTPUT).nsp	:	$(OUTPUT).nso $(OUTPUT).npdm
 endif
 
 $(OUTPUT).nso	:	$(OUTPUT).elf
