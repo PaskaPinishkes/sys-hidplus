@@ -38,4 +38,4 @@ The best way to get your questions answered is by asking me in Discord (IgnacIo#
 
 
 # Donations
-No, use your money to buy games or something idk
+No, use your money to buy games for yourself or something idk
