@@ -35,3 +35,7 @@ The best way to get your questions answered is by asking me in Discord (IgnacIo#
 * cathery - helping me with my dumb questions and issues
 * ReSwitched Discord Server - help in the support channels
 * **Everyone using this sysmodule - thanks a lot!**
+
+
+# Donations
+no
