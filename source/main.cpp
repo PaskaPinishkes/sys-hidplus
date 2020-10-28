@@ -155,7 +155,7 @@ static Mutex fileMutex;
 int printToFile(const char* myString)
 {
     if (IsRelease)
-        return;
+        return -1;
     mutexLock(&fileMutex);
     FILE *log = fopen("/hidplus/log.txt", "w+a");
     if (log != nullptr) {
