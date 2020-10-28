@@ -32,5 +32,6 @@ The best way to get your questions answered is by asking me in Discord (IgnacIo#
 
 # Special Thanks
 * jakibaki - base and inspiration for this sysmodule (hid-mitm), a lot of the code comes from it
+* cathery - helping me with my dumb questions and issues
 * ReSwitched Discord Server - help in the support channels
 * **Everyone using this sysmodule - thanks a lot!**
