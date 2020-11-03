@@ -26,6 +26,7 @@ You can modify the behaviour of the controller emulation on the python file by c
 
 
 # Known issues
+* Sticks are inverted when using Linux
 * Input lag is increased on demanding games such as Super Mario Odyssey
 
 
