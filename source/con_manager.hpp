@@ -12,7 +12,7 @@ int printToFile(const char* myString);
 
 class FakeController {
 public:
-    u64 controllerHandle = 0;
+    HiddbgHdlsHandle controllerHandle = {0};
     HiddbgHdlsDeviceInfo controllerDevice = {0};
     HiddbgHdlsState controllerState = {0};
     int initialize(u16);
