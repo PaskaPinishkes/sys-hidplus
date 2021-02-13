@@ -38,21 +38,21 @@ int FakeController::initialize(u16 conDeviceType)
         controllerDevice.colorRightGrip = RGBA8_MAXALPHA(255,0,127);
     }
     
-    controllerDevice.npadInterfaceType = NpadInterfaceType_Bluetooth;
+    controllerDevice.npadInterfaceType = HidNpadInterfaceType_Bluetooth;
 
     // Setup example controller state.
-    controllerState.batteryCharge = 4; // Set battery charge to full.
+    controllerState.battery_level = 4; // Set battery charge to full.
 
     if (conDeviceType == 1 || conDeviceType == 2)
     {
-        controllerState.joysticks[JOYSTICK_LEFT].dx = 0x0;
-        controllerState.joysticks[JOYSTICK_LEFT].dy = -0x0;
+        controllerState.analog_stick_l.x = 0x0;
+        controllerState.analog_stick_l.y = -0x0;
     }
 
     if (conDeviceType == 1 || conDeviceType == 3)
     {
-        controllerState.joysticks[JOYSTICK_RIGHT].dx = 0x0;
-        controllerState.joysticks[JOYSTICK_RIGHT].dy = -0x0;
+        controllerState.analog_stick_r.x = 0x0;
+        controllerState.analog_stick_r.y = -0x0;
     }
     
     myResult = hiddbgAttachHdlsVirtualDevice(&controllerHandle, &controllerDevice);
@@ -78,7 +78,7 @@ int FakeController::deInitialize()
     if (R_FAILED(myResult)) {
         return -1;
     }
-    controllerHandle = 0;
+    controllerHandle = {0};
     controllerDevice = {0};
 
     isInitialized = false;
@@ -130,14 +130,14 @@ void apply_fake_con_state(struct input_message message)
                 joyrx = message.joy_r_x3;
                 joyry = message.joy_r_y3;
                 break;
-            /*case 3:
+            case 3:
                 conType = message.con_type4;
                 keys = message.keys4;
                 joylx = message.joy_l_x4;
                 joyly = message.joy_l_y4;
                 joyrx = message.joy_r_x4;
                 joyry = message.joy_r_y4;
-                break;*/
+                break;
         }
 
         // If there is no controller connected, we have to initialize one
@@ -149,17 +149,17 @@ void apply_fake_con_state(struct input_message message)
         else if (fakeControllerList[i].isInitialized && (conType < 1 || conType > 3))
         {
             fakeControllerList[i].deInitialize();
-            FakeController tempCon;
-            fakeControllerList[i] = tempCon;
+            /*FakeController tempCon;
+            fakeControllerList[i] = tempCon;*/
         }
 
         if (fakeControllerList[i].isInitialized)
         {
             fakeControllerList[i].controllerState.buttons = keys;
-            fakeControllerList[i].controllerState.joysticks[0].dx = joylx;
-            fakeControllerList[i].controllerState.joysticks[0].dy = joyly;
-            fakeControllerList[i].controllerState.joysticks[1].dx = joyrx;
-            fakeControllerList[i].controllerState.joysticks[1].dy = joyry;
+            fakeControllerList[i].controllerState.analog_stick_l.x = joylx;
+            fakeControllerList[i].controllerState.analog_stick_l.y = joyly;
+            fakeControllerList[i].controllerState.analog_stick_r.x = joyrx;
+            fakeControllerList[i].controllerState.analog_stick_r.y = joyry;
             hiddbgSetHdlsState(fakeControllerList[i].controllerHandle, &fakeControllerList[i].controllerState);
         }
     }
