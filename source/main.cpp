@@ -15,8 +15,8 @@
 #include <optional>
 #include <mutex>
 
-// Log text file bool
-const bool IsRelease = true;
+// Log text
+#define IS_RELEASE 1
 
 static const SocketInitConfig sockInitConf = {
     .bsdsockets_version = 1,
@@ -154,8 +154,7 @@ extern "C" {
 static Mutex fileMutex;
 int printToFile(const char* myString)
 {
-    if (IsRelease)
-        return -1;
+    #if IS_RELEASE == 0
     mutexLock(&fileMutex);
     FILE *log = fopen("/hidplus/log.txt", "w+a");
     if (log != nullptr) {
@@ -164,6 +163,9 @@ int printToFile(const char* myString)
     }
     mutexUnlock(&fileMutex);
     return 0;
+    #else
+    return -1;
+    #endif
 }
 
 // Main program entrypoint
@@ -185,7 +187,6 @@ int main(int argc, char* argv[])
     
     while (appletMainLoop()) // Main loop
     {
-        hidScanInput();
 
         //u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
 

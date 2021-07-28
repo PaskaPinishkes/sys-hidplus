@@ -1,6 +1,7 @@
 #include "con_manager.hpp"
 #include "udp_manager.hpp"
 #include <mutex>
+#include <array>
 
 // Some of the code comes from hid-mitm
 
@@ -61,7 +62,7 @@ int FakeController::initialize(u16 conDeviceType)
         return -1;
     }
 
-    //printToFile("Controller initialized!");
+    printToFile("Controller initialized!");
     isInitialized = true;
     return 0;
 }
@@ -76,7 +77,7 @@ int FakeController::deInitialize()
     
     myResult = hiddbgDetachHdlsVirtualDevice(controllerHandle);
     if (R_FAILED(myResult)) {
-        return -1;
+        printToFile("Fatal Error while detaching controller.");
     }
     controllerHandle = {0};
     controllerDevice = {0};
@@ -86,7 +87,7 @@ int FakeController::deInitialize()
     return 0;
 }
 
-FakeController fakeControllerList [4];
+std::array<FakeController, 4> fakeControllerList;
 u64 buttonPresses;
 
 void apply_fake_con_state(struct input_message message)
@@ -160,36 +161,14 @@ void apply_fake_con_state(struct input_message message)
             fakeControllerList[i].controllerState.analog_stick_l.y = joyly;
             fakeControllerList[i].controllerState.analog_stick_r.x = joyrx;
             fakeControllerList[i].controllerState.analog_stick_r.y = joyry;
-            hiddbgSetHdlsState(fakeControllerList[i].controllerHandle, &fakeControllerList[i].controllerState);
+            Result myResult;
+            // This function is causing all the issues in 12.0
+            myResult = hiddbgSetHdlsState(fakeControllerList[i].controllerHandle, &fakeControllerList[i].controllerState);
+            if (R_FAILED(myResult)) {
+                printToFile("Fatal Error while updating Controller State.");
+            }   
         }
     }
-    
-    
-    
-
-    /*if (fakeControllerList[0].isInitialized)
-    {
-        buttonPresses = message.keys;
-        if (message.con_type != 1)
-        {
-            if (message.keys & KEY_L)
-            {
-                buttonPresses &= ~KEY_L;
-                buttonPresses |= KEY_SL;
-            }
-
-            if (message.keys & KEY_R)
-            {
-                buttonPresses &= ~KEY_R;
-                buttonPresses |= KEY_SR;
-            }
-        }
-        
-        // Set the controller sticks and joystick according to what the network told us
-        
-
-        
-    }*/
     
     return;
 }
@@ -200,7 +179,7 @@ static struct input_message fakeConsState;
 void networkThread(void* _)
 {
     struct input_message temporal_pkg;
-    printToFile("Starting Thread!");
+    printToFile("Starting Network Loop Thread!");
     while (true)
     {
         int poll_res = poll_udp_input(&temporal_pkg);
