@@ -35,7 +35,7 @@ You can modify the behaviour of the controller emulation on the python file by c
 
 
 # Support
-The best way to get your questions answered is by asking me in Discord (IgnacIo#0001) or by asking on the gbatemp thread.
+The best way to get your questions answered is by asking me in Discord (Paskkkk#6441) or by asking on the gbatemp thread.
 
 
 # Special Thanks
