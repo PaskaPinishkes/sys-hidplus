@@ -18,7 +18,6 @@ You can modify the behaviour of the controller emulation on the python file by c
 * Anarchy mode (3 players using 1 single emulated controller)
 * Keyboard Compatibility
 * Make the compatibility for sideways joycons emulation better
-* Add 4th controller emulation
 * Add 5-8th controller emulation
 * Add gyro compatibility
 * Add USB compatibility
@@ -35,7 +34,7 @@ You can modify the behaviour of the controller emulation on the python file by c
 
 
 # Support
-The best way to get your questions answered is by asking me in Discord (Paskkkk#6441) or by asking on the gbatemp thread.
+The best way to get your questions answered is by asking on the gbatemp thread.
 
 
 # Special Thanks
